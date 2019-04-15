@@ -1,0 +1,117 @@
+---
+title: "R Notebook"
+output: html_notebook
+author: "Ziqi Tang"
+date: "4/14/2019"
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+. 
+
+```{r}
+library(mdsr)
+library(babynames)
+library(stringr)
+```
+
+
+### 15.1
+```{r}
+macbeth_url <- "http://www.gutenberg.org/cache/epub/1129/pg1129.txt"
+Macbeth_raw <- RCurl::getURL(macbeth_url)
+data("Macbeth_raw")
+```
+
+
+```{r}
+macbeth <- strsplit(Macbeth_raw, "\r\n")[[1]]
+length(macbeth)
+```
+
+```{r}
+speaking_lines <- grep(("^  [A-Z ]+\\. " ), macbeth, value = TRUE)
+length(speaking_lines)
+head(speaking_lines)
+```
+There are 477 speaking lines there.
+
+### 15.3
+```{r}
+baby <- data.frame(babynames)
+baby
+```
+
+```{r}
+boys <- 
+  baby %>%
+  filter(sex == 'M', grepl("[aeiou]$", name)) %>%
+  group_by(name) %>%
+  summarise(n = sum(n)) %>%
+  arrange(desc(n)) %>%
+  head(10)
+boys
+  
+```
+```{r}
+boys1 <- 
+  baby %>%
+  filter(grepl("joe$|jo$|Joe$|Jo$", name)) %>%
+  group_by(name) %>%
+  summarise(n = sum(n)) %>%
+  arrange(desc(n)) %>%
+  head(10)
+boys1
+```
+
+### 15.6
+
+```{r}
+mac <- "http://www.gutenberg.org/files/100/100-0.txt"
+guten <- RCurl::getURL(mac)
+```
+
+```{r}
+a <- strsplit(guten, "\r\n")[[1]]
+length(a)
+```
+```{r}
+speaking_lines_a <- grep(("^  [A-Z ]+\\. " ), a, value = TRUE)
+length(speaking_lines_a)
+head(speaking_lines_a)
+```
+
+
+### 15.7
+
+```{r}
+speaking_lines_b = grep("^[A-Z]+[A-Z]\\.|^  [A-Z]+[A-Z]\\.", a, value = TRUE)
+characters=speaking_lines_b %>% 
+  str_extract("^[A-Z]+[A-Z]\\.|^  [A-Z]+[A-Z]\\.") 
+```
+
+```{r}
+lines = matrix(1, nrow = length(characters), ncol = 1)
+df = data.frame(characters,lines)
+df
+```
+
+```{r}
+sum = aggregate(df$lines, by = list(characters), FUN = sum)
+ordered = sum[order(sum[,2], decreasing = TRUE),]
+names(ordered) = c('character','lines')
+top30 = ordered[1:30,]
+top30
+```
+
+```{r}
+barplot(top30$lines,names.arg=top30$character)
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
